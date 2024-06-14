@@ -1,21 +1,10 @@
-import nonebot
-# from nonebot import on_command, CommandSession, get_bot
-# import pytz
-# from aiocqhttp.exceptions import Error as CQHttpError
 from nonebot import on_command
-from nonebot.rule import to_me
 from nonebot.typing import T_State
 from nonebot.adapters import Bot, Event
 from nonebot.permission import Permission
-from nonebot import require
-from nonebot.adapters.cqhttp import MessageSegment
 
-# scheduler = require("plugin-apscheduler-master.nonebot_plugin_apscheduler").scheduler
-from datetime import datetime
 import os
 import pickle
-import pytz
-from collections import Counter
 
 #--------------------------
 # Author: Zachary Chen

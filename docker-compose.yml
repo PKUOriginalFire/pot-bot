@@ -1,0 +1,15 @@
+name: pot-bot
+services:
+  lagrange.onebot:
+    tty: true
+    volumes:
+      - ./lagrange:/app/data
+    environment:
+      - UID=1000
+      - GID=1000
+    image: ghcr.io/lagrangedev/lagrange.onebot:edge
+
+  pot:
+    volumes:
+      - ./pot:/app/data
+    image: ghcr.io/PKUOriginalFire/pot-bot:latest
