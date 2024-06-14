@@ -98,7 +98,7 @@ async def newpot_got_when(bot: Bot, event: Event, state: T_State):
 async def newpot_got_what(bot: Bot, event: Event, state: T_State):
     if str(state["what"]).lower() == "quit":
         await newpot.finish("溜了溜了.jpg")
-    state["pot"] = one_pot(state["who"], state["where"], state["when"], state["what"])
+    state["pot"] = one_pot(str(state["who"]), str(state["where"]), str(state["when"]), str(state["what"]))
 
 
 @newpot.got("noodle", prompt="您几面？")
@@ -108,7 +108,7 @@ async def newpot_got_noodle(bot: Bot, event: Event, state: T_State):
         await newpot.finish("溜了溜了.jpg")
     if not noodle.isdigit() or int(noodle) < 0:
         await newpot.reject("？这边建议再输一遍面数呢（")
-    state["pot"].noodle.append(int(state["noodle"]))
+    state["pot"].noodle.append(int(str(state["noodle"])))
 
 
 @newpot.got("rice", prompt="您几饭？")
@@ -118,7 +118,7 @@ async def newpot_got_rice(bot: Bot, event: Event, state: T_State):
         await newpot.finish("溜了溜了.jpg")
     if not rice.isdigit() or int(rice) < 0:
         await newpot.reject("？这边建议再输一遍饭数呢（")
-    state["pot"].rice.append(int(state["rice"]))
+    state["pot"].rice.append(int(str(state["rice"])))
     save_pot()
     cur_pots.append(state["pot"])
     report = print_all_pot()
@@ -140,7 +140,7 @@ async def handle_first_receive_delpot(bot: Bot, event: Event, state: T_State):
 @delpot.got("pot_id", prompt="扬哪个锅？来个编号")
 async def delpot_gotid(bot: Bot, event: Event, state: T_State):
     pot_id = str(state["pot_id"])
-    if state["pot_id"].lower() == "quit":
+    if str(state["pot_id"]).lower() == "quit":
         await delpot.finish("溜了溜了.jpg")
     if not pot_id.isdigit():
         await delpot.reject("？这边建议再输一遍锅编号呢（")
@@ -207,9 +207,9 @@ async def join_get_rice(bot: Bot, event: Event, state: T_State):
     if not rice.isdigit() or int(rice) < 0:
         await join.reject("？这边建议再输一遍饭数呢（")
     who = str(state["who"])
-    which = int(state["which"]) - 1
-    noodle = int(state["noodle"])
-    rice = int(state["rice"])
+    which = int(str(state["which"])) - 1
+    noodle = int(str(state["noodle"]))
+    rice = int(str(state["rice"]))
     save_pot()
     cur_pots[which].who.append(who)
     cur_pots[which].noodle.append(noodle)
@@ -249,7 +249,7 @@ async def leave_got_who(bot: Bot, event: Event, state: T_State):
     who = str(state["who"])
     if who.lower() == "quit":
         await leave.finish("溜了溜了.jpg")
-    which = int(state["which"]) - 1
+    which = int(str(state["which"])) - 1
     if who.isdigit():
         idx = int(who) - 1
         if idx < 0 or idx >= len(cur_pots[which].who):
@@ -302,7 +302,7 @@ async def driver_got_who(bot: Bot, event: Event, state: T_State):
     who = str(state["who"])
     if who.lower() == "quit":
         await driver.finish("溜了溜了.jpg")
-    which = int(state["which"]) - 1
+    which = int(str(state["which"])) - 1
     if who.isdigit() or (who[0] == "-" and who[1:].isdigit()):
         idx = int(who) - 1
         if idx <= -1 or idx >= len(cur_pots[which].who):
@@ -359,8 +359,8 @@ async def change_got_what(bot: Bot, event: Event, state: T_State):
     what = str(state["what"])
     if what.lower() == "quit":
         await change.finish("溜了溜了.jpg")
-    pot_id = int(state["which"]) - 1
-    feature = state["feature"]
+    pot_id = int(str(state["which"])) - 1
+    feature = str(state["feature"])
     save_pot()
     if feature == "时间":
         cur_pots[pot_id].when = what
@@ -405,7 +405,7 @@ async def changemian_got_who(bot: Bot, event: Event, state: T_State):
     who = str(state["who"])
     if who.lower() == "quit":
         await changemian.finish("溜了溜了.jpg")
-    which = int(state["which"]) - 1
+    which = int(str(state["which"])) - 1
     if who.isdigit():
         idx = int(who) - 1
         if idx < 0 or idx >= len(cur_pots[which].who):
@@ -421,8 +421,8 @@ async def changemian_got_howmany(bot: Bot, event: Event, state: T_State):
     howmany = str(state["howmany"])
     if howmany.lower() == "quit":
         await changemian.finish("溜了溜了.jpg")
-    which = int(state["which"]) - 1
-    who = state["who"]
+    which = int(str(state["which"])) - 1
+    who = str(state["who"])
     if not howmany.isdigit() or int(howmany) < 0:
         await changemian.reject("？这边建议再输一遍面的数量呢（")
     idx = cur_pots[which].who.index(who)
@@ -463,7 +463,7 @@ async def changefan_got_who(bot: Bot, event: Event, state: T_State):
     who = str(state["who"])
     if who.lower() == "quit":
         await changefan.finish("溜了溜了.jpg")
-    which = int(state["which"]) - 1
+    which = int(str(state["which"])) - 1
     if who.isdigit():
         idx = int(who) - 1
         if idx < 0 or idx >= len(cur_pots[which].who):
@@ -479,8 +479,8 @@ async def changefan_got_howmany(bot: Bot, event: Event, state: T_State):
     howmany = str(state["howmany"])
     if howmany.lower() == "quit":
         await changefan.finish("溜了溜了.jpg")
-    which = int(state["which"]) - 1
-    who = state["who"]
+    which = int(str(state["which"])) - 1
+    who = str(state["who"])
     if not howmany.isdigit() or int(howmany) < 0:
         await changefan.reject("？这边建议再输一遍饭的数量呢（")
     idx = cur_pots[which].who.index(who)
@@ -522,7 +522,7 @@ async def comment_got_who(bot: Bot, event: Event, state: T_State):
     if what.lower() == "quit":
         await comment.finish("溜了溜了.jpg")
 
-    which = int(state["which"]) - 1
+    which = int(str(state["which"])) - 1
     save_pot()
     cur_pots[which].comment = cur_pots[which].comment + " " + what
     report = print_all_pot()
@@ -585,7 +585,7 @@ async def jumpcar_got_who(bot: Bot, event: Event, state: T_State):
     who = str(state["who"])
     if who.lower() == "quit":
         await jumpcar.finish("溜了溜了.jpg")
-    which = int(state["which"]) - 1
+    which = int(str(state["which"])) - 1
     if who.isdigit():
         idx = int(who) - 1
         if idx < 0 or idx >= len(cur_pots[which].who):
@@ -601,7 +601,7 @@ async def jumpcar_got_who(bot: Bot, event: Event, state: T_State):
 
 @jumpcar.got("target", prompt="新锅编号？")
 async def jumpcar_got_target(bot: Bot, event: Event, state: T_State):
-    which = int(state["which"]) - 1
+    which = int(str(state["which"])) - 1
     target = str(state["target"])
     idx = str(state["who"])
 
