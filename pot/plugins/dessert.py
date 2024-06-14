@@ -239,7 +239,7 @@ new_menu = on_command("新增甜品菜单", permission=Permission(), priority=5)
 
 @new_menu.handle()
 async def handle_first_receive_new_menu(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     for a, b in zip(args, ["menu_name"]):
         state[b] = a
 
@@ -260,7 +260,7 @@ new_item = on_command("新增甜品", permission=Permission(), priority=5)
 
 @new_item.handle()
 async def handle_first_receive_new_item(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["whichmenu", "name", "price"]
     for a, b in zip(args, keys):
         state[b] = a
@@ -300,7 +300,7 @@ del_item = on_command("删除甜品", permission=Permission(), priority=5)
 
 @del_item.handle()
 async def handle_first_receive_del_item(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["whichmenu", "name"]
     for a, b in zip(args, keys):
         state[b] = a
@@ -338,7 +338,7 @@ del_menu = on_command("删除甜品菜单", permission=Permission(), priority=5)
 
 @del_menu.handle()
 async def handle_first_receive_del_menu(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     for a, b in zip(args, ["whichmenu"]):
         state[b] = a
     # state[''] = args[0]
@@ -365,7 +365,7 @@ new_truck = on_command("开甜品车", permission=Permission(), priority=5)
 
 @new_truck.handle()
 async def handle_first_receive_new_truck(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["whichmenu", "who", "time"]
     for a, b in zip(args, keys):
         state[b] = a
@@ -401,7 +401,7 @@ timechange = on_command("改时间", permission=Permission(), priority=5)
 
 @timechange.handle()
 async def handle_first_receive_timechange(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["which", "time"]
     for a, b in zip(args, keys):
         state[b] = a
@@ -433,7 +433,7 @@ del_truck = on_command("取消甜品车", permission=Permission(), priority=5)
 
 @del_truck.handle()
 async def handle_first_receive_del_truck(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["which", "who"]
     for a, b in zip(args, keys):
         state[b] = a
@@ -467,7 +467,7 @@ change_item = on_command("上甜品车", permission=Permission(), priority=5)
 
 @change_item.handle()
 async def handle_first_receive_change_item(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     # keys = ['whichtruck', 'name', 'dessert', 'howmany']
     if len(args) > 0:
         state["whichtruck"] = args[0]
@@ -520,7 +520,7 @@ async def change_item_got_dessert(bot: Bot, event: Event, state: T_State):
     ):
         await change_item.finish("溜了溜了.jpg")
     if isinstance(str(state["dessert"]), str):
-        state["dessert"] = str(state["dessert"]).strip().split()
+        state["dessert"] = str(state["dessert"]).strip().split()[1:]
     # state['dessert_item'] = find_dessert_by_name(str(state['dessert']), find_menu_by_name(str(state['truck']).menu_name)[1])
     state["dessert_item"] = [
         find_dessert_by_name(d, find_menu_by_name(str(state["truck"]).menu_name)[1])
@@ -562,7 +562,7 @@ change_note = on_command("修改甜品备注", permission=Permission(), priority
 
 @change_note.handle()
 async def handle_first_receive_change_note(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["whichtruck", "name", "note"]
     for a, b in zip(args, keys):
         state[b] = a
@@ -627,7 +627,7 @@ menu_see = on_command("查看菜单", permission=Permission(), priority=3)
 
 @menu_see.handle()
 async def handle_first_receive_menu_see(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["whichmenu"]
     for a, b in zip(args, keys):
         state[b] = a
@@ -648,7 +648,7 @@ truck_see = on_command("查看甜品车", permission=Permission(), priority=5)
 
 @truck_see.handle()
 async def handle_first_receive_truck_see(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["whichtruck"]
     for a, b in zip(args, keys):
         state[b] = a

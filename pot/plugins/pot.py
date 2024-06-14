@@ -70,7 +70,7 @@ newpot = on_command("约锅", permission=Permission(), priority=5)
 @newpot.handle()
 # @on_command('newpot', aliases=('约锅'), only_to_me=False)
 async def handle_first_receive_newpot(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["who", "where", "when", "what", "noodle", "rice"]
     for a, b in zip(args, keys):
         state[b] = a
@@ -162,7 +162,7 @@ join = on_command("上车", permission=Permission(), priority=5)
 
 @join.handle()
 async def handle_first_receive_join(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["who", "which", "noodle", "rice"]
     for a, b in zip(args, keys):
         state[b] = a
@@ -225,7 +225,7 @@ leave = on_command("咕了", permission=Permission(), priority=5, aliases=set(["
 
 @leave.handle()
 async def handle_first_receive_leave(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["which", "who"]
     for a, b in zip(args, keys):
         state[b] = a
@@ -278,7 +278,7 @@ driver = on_command("有人点锅了", permission=Permission(), priority=5, alia
 
 @driver.handle()
 async def handle_first_receive_driver(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["which", "who"]
     for a, b in zip(args, keys):
         state[b] = a
@@ -325,7 +325,7 @@ change = on_command("改锅", permission=Permission(), priority=5)
 
 @change.handle()
 async def handle_first_receive_change(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["which", "feature", "what"]
     for a, b in zip(args, keys):
         state[b] = a
@@ -381,7 +381,7 @@ changemian = on_command("改面", permission=Permission(), priority=5)
 
 @changemian.handle()
 async def handle_first_receive_changemian(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["which", "who", "howmany"]
     for a, b in zip(args, keys):
         state[b] = a
@@ -439,7 +439,7 @@ changefan = on_command("改饭", permission=Permission(), priority=5)
 
 @changefan.handle()
 async def handle_first_receive_changefan(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["which", "who", "howmany"]
     for a, b in zip(args, keys):
         state[b] = a
@@ -497,7 +497,7 @@ comment = on_command("加需求", permission=Permission(), priority=5)
 
 @comment.handle()
 async def handle_first_receive_comment(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["which", "what"]
     for a, b in zip(args, keys):
         state[b] = a
@@ -561,7 +561,7 @@ jumpcar = on_command("换车", permission=Permission(), priority=5)
 
 @jumpcar.handle()
 async def handle_first_receive_jumpcar(bot: Bot, event: Event, state: T_State):
-    args = str(event.get_message()).strip().split()
+    args = str(event.get_message()).strip().split()[1:]
     keys = ["which", "who", "target"]
     for a, b in zip(args, keys):
         state[b] = a
