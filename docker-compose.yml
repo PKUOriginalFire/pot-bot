@@ -12,4 +12,4 @@ services:
   pot:
     volumes:
       - ./pot:/app/data
-    image: ghcr.io/PKUOriginalFire/pot-bot:latest
+    image: ghcr.io/pkuoriginalfire/pot-bot:latest
