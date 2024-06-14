@@ -6,7 +6,6 @@ on:
       - 'master'
   workflow_dispatch:
 
-using-an-action
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
