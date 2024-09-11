@@ -5,13 +5,13 @@
 首次运行用：
 
 ```shell
-docker compose up
+ACCOUNT=QQ号 docker compose up
 ```
 
 扫码登陆后，再次运行即可自动登录：
 
 ```shell
-docker compose up -d
+ACCOUNT=QQ号 docker compose up -d
 ```
 
 ## 鸣谢
