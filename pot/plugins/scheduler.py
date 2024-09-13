@@ -13,7 +13,7 @@ from nonebot_plugin_apscheduler import scheduler
 # --------------------------
 
 
-print("----------- scheduler -----------")
+logger.info("----------- scheduler -----------")
 
 config = get_plugin_config(Config)
 

@@ -1,46 +1,50 @@
-from nonebot import on_command
+from nonebot import on_command, require, logger
 from nonebot.typing import T_State
 from nonebot.adapters import Bot, Event
 from nonebot.permission import Permission
+from pydantic import BaseModel, TypeAdapter
+from pathlib import Path
 
-import os
-import pickle
+require("nonebot_plugin_localstore")
+
+import nonebot_plugin_localstore as store
 
 # --------------------------
 # Author: Zachary Chen
 # --------------------------
 
-print("----------- pot -----------")
+logger.info("----------- pot -----------")
 
 
-def is_int(s):
-    try:
-        int(s)
-        return True
-    except ValueError:
-        pass
+pots_dump: Path = store.get_data_file("pot", "cur_pots_dump")
+pots_dump_old: Path = store.get_data_file("pot", "cur_pots_dump_old")
+
+logger.info(f"数据储存目录：{pots_dump.parent}")
+
+class OnePot(BaseModel):
+    where: str
+    who: list[str]
+    when: str
+    what: str
+    driver_idx: int = -1
+    noodle: list[int] = []
+    rice: list[int] = []
+    comment: str = ""
 
 
-class one_pot:
-    def __init__(self, who, where, when, what):
-        self.where = where
-        self.who = [who]
-        self.when = when
-        self.what = what
-        self.driver_idx = -1
-        self.noodle = []
-        self.rice = []
-        self.comment = ""
+PotsModel = TypeAdapter(list[OnePot])
+
+cur_pots = PotsModel.validate_python([])
+if pots_dump.exists():
+    cur_pots = PotsModel.model_validate_json(pots_dump.read_text())
 
 
 def save_pot():
-    with open("cur_pots_dump_old", "wb") as f:
-        pickle.dump(cur_pots, f)
+    pots_dump_old.write_text(PotsModel.dump_json(cur_pots))
 
 
 def print_all_pot():
-    with open("cur_pots_dump", "wb") as f:
-        pickle.dump(cur_pots, f)
+    pots_dump.write_text(PotsModel.dump_json(cur_pots))
     pot_str = "现在约了的锅有："
     if len(cur_pots) == 0:
         return pot_str + "[无]"
@@ -57,11 +61,6 @@ def print_all_pot():
             pot_str += "\n备注:" + pot.comment
     return pot_str
 
-
-cur_pots = []
-if os.path.exists("cur_pots_dump"):
-    with open("cur_pots_dump", "rb") as f:
-        cur_pots = pickle.load(f)
 
 ### 约锅 ###
 newpot = on_command("约锅", permission=Permission(), priority=5)
@@ -98,7 +97,12 @@ async def newpot_got_when(bot: Bot, event: Event, state: T_State):
 async def newpot_got_what(bot: Bot, event: Event, state: T_State):
     if str(state["what"]).lower() == "quit":
         await newpot.finish("溜了溜了.jpg")
-    state["pot"] = one_pot(str(state["who"]), str(state["where"]), str(state["when"]), str(state["what"]))
+    state["pot"] = OnePot(
+        who=[str(state["who"])],
+        where=str(state["where"]),
+        when=str(state["when"]),
+        what=str(state["what"]),
+    )
 
 
 @newpot.got("noodle", prompt="您几面？")
@@ -127,7 +131,9 @@ async def newpot_got_rice(bot: Bot, event: Event, state: T_State):
 
 ### 删锅 ###
 # @on_command('delpot', aliases=('锅没了', '锅完了'), only_to_me=False)
-delpot = on_command("锅没了", permission=Permission(), priority=5, aliases=set(["吃完了"]))
+delpot = on_command(
+    "锅没了", permission=Permission(), priority=5, aliases=set(["吃完了"])
+)
 
 
 @delpot.handle()
@@ -220,7 +226,9 @@ async def join_get_rice(bot: Bot, event: Event, state: T_State):
 
 ### 下车 ###
 # @on_command('leave', aliases=('下车', '咕了', '鸽了'), only_to_me=False)
-leave = on_command("咕了", permission=Permission(), priority=5, aliases=set(["下车", "鸽了"]))
+leave = on_command(
+    "咕了", permission=Permission(), priority=5, aliases=set(["下车", "鸽了"])
+)
 
 
 @leave.handle()
@@ -273,7 +281,9 @@ async def leave_got_who(bot: Bot, event: Event, state: T_State):
 
 ### 换司机 ###
 # @on_command('driver', aliases=('司机', '有人点锅了'), only_to_me=False)
-driver = on_command("有人点锅了", permission=Permission(), priority=5, aliases=set(["司机"]))
+driver = on_command(
+    "有人点锅了", permission=Permission(), priority=5, aliases=set(["司机"])
+)
 
 
 @driver.handle()
@@ -344,14 +354,18 @@ async def change_got_which(bot: Bot, event: Event, state: T_State):
             await change.reject("重新选一个锅吧.jpg")
 
 
-@change.got("feature", prompt="改锅的哪个属性？在【时间】【地点】【口味】【备注】中选一个吧")
+@change.got(
+    "feature", prompt="改锅的哪个属性？在【时间】【地点】【口味】【备注】中选一个吧"
+)
 async def change_got_feature(bot: Bot, event: Event, state: T_State):
     feature = str(state["feature"])
     if feature.lower() == "quit":
         await change.finish("溜了溜了.jpg")
     features = ["时间", "地点", "口味", "备注"]
     if feature not in features:
-        await change.reject("真的有这个属性吗？在【时间】【地点】【口味】【备注】中选一个吧")
+        await change.reject(
+            "真的有这个属性吗？在【时间】【地点】【口味】【备注】中选一个吧"
+        )
 
 
 @change.got("what", prompt="改成啥？")
@@ -619,11 +633,11 @@ async def jumpcar_got_target(bot: Bot, event: Event, state: T_State):
     save_pot()
     if target >= len(cur_pots):
         target = len(cur_pots)
-        newpot = one_pot(
-            cur_pots[which].who[idx],
-            cur_pots[which].where,
-            cur_pots[which].when,
-            cur_pots[which].what,
+        newpot = OnePot(
+            who=[cur_pots[which].who[idx]],
+            where=cur_pots[which].where,
+            when=cur_pots[which].when,
+            what=cur_pots[which].what,
         )
         cur_pots.append(newpot)
     else:
@@ -669,14 +683,15 @@ undo = on_command("undo", permission=Permission(), priority=3)
 
 @undo.handle()
 async def handle_first_receive_undo(bot: Bot, event: Event, state: T_State):
-    if os.path.exists("cur_pots_dump_old"):
-        with open("cur_pots_dump_old", "rb") as f:
-            cur_pots[:] = pickle.load(f)
-        os.rename("cur_pots_dump", "potstmp")
-        os.rename("cur_pots_dump_old", "potstmp2")
+    if pots_dump_old.exists():
+        cur_pots[:] = PotsModel.validate_json(pots_dump_old.read_text())
+
+        f1 = pots_dump.read_text()
+        f2 = pots_dump_old.read_text()
         report = print_all_pot()
-        os.rename("potstmp", "cur_pots_dump_old")
-        os.rename("potstmp2", "cur_pots_dump")
+        pots_dump_old.write_text(f1)
+        pots_dump.write_text(f2)
+
         await undo.finish("撤回操作成功！\n" + report)
     else:
         await undo.finish("坏了 怎么没法撤回捏")

@@ -28,8 +28,7 @@ services:
     #   context: .
     #   dockerfile: Dockerfile
     container_name: pot
-    env_file:
-      - .env
     volumes:
-      - ./pot:/app/data
+      - ./.env:/app/.env:ro
+      - ./data:/root/.local/share/nonebot2
     restart: always

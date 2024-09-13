@@ -1,4 +1,4 @@
-from nonebot import on_command
+from nonebot import on_command, logger
 from nonebot.typing import T_State
 from nonebot.adapters import Bot, Event
 from nonebot.permission import Permission
@@ -10,7 +10,7 @@ import pickle
 # Author: Zachary Chen
 # --------------------------
 
-print("----------- dessert -----------")
+logger.info("----------- dessert -----------")
 
 
 class one_dessert_item:

@@ -303,6 +303,20 @@ wheels = [
 ]
 
 [[package]]
+name = "nonebot-plugin-localstore"
+version = "0.7.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "nonebot2" },
+    { name = "pydantic" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/38/18/4656dc5ac000d04ba0f00cf0a54ab0f4f381f0453d6cad6e04736f43991e/nonebot_plugin_localstore-0.7.1.tar.gz", hash = "sha256:9c2a7b39b50240896d9306adb79d8047308d0e77b88e3272b19be4908bdaabc9", size = 7037 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fb/aa/a00d2ddfd96008d2fb6d50031f9cb97a2c55621e6fb36dae6b6cb8a50384/nonebot_plugin_localstore-0.7.1-py3-none-any.whl", hash = "sha256:7908af162d1d0e8c736ae8863723325d057289f6b080ae44ff9ff39294f9ed16", size = 8597 },
+]
+
+[[package]]
 name = "nonebot-plugin-status"
 version = "0.9.0"
 source = { registry = "https://pypi.org/simple" }
@@ -347,16 +361,20 @@ source = { editable = "." }
 dependencies = [
     { name = "nonebot-adapter-onebot" },
     { name = "nonebot-plugin-apscheduler" },
+    { name = "nonebot-plugin-localstore" },
     { name = "nonebot-plugin-status" },
     { name = "nonebot2", extra = ["fastapi"] },
+    { name = "pydantic" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "nonebot-adapter-onebot", specifier = ">=2.4.4" },
     { name = "nonebot-plugin-apscheduler", specifier = ">=0.5.0" },
+    { name = "nonebot-plugin-localstore" },
     { name = "nonebot-plugin-status", specifier = ">=0.9.0" },
     { name = "nonebot2", extras = ["fastapi"], specifier = ">=2.3.3" },
+    { name = "pydantic", specifier = ">=2.9.1" },
 ]
 
 [[package]]
