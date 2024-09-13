@@ -36,15 +36,15 @@ PotsModel = TypeAdapter(list[OnePot])
 
 cur_pots = PotsModel.validate_python([])
 if pots_dump.exists():
-    cur_pots = PotsModel.model_validate_json(pots_dump.read_text())
+    cur_pots = PotsModel.validate_json(pots_dump.read_bytes())
 
 
 def save_pot():
-    pots_dump_old.write_text(PotsModel.dump_json(cur_pots))
+    pots_dump_old.write_bytes(PotsModel.dump_json(cur_pots))
 
 
 def print_all_pot():
-    pots_dump.write_text(PotsModel.dump_json(cur_pots))
+    pots_dump.write_bytes(PotsModel.dump_json(cur_pots))
     pot_str = "现在约了的锅有："
     if len(cur_pots) == 0:
         return pot_str + "[无]"
@@ -684,13 +684,13 @@ undo = on_command("undo", permission=Permission(), priority=3)
 @undo.handle()
 async def handle_first_receive_undo(bot: Bot, event: Event, state: T_State):
     if pots_dump_old.exists():
-        cur_pots[:] = PotsModel.validate_json(pots_dump_old.read_text())
+        cur_pots[:] = PotsModel.validate_json(pots_dump_old.read_bytes())
 
-        f1 = pots_dump.read_text()
-        f2 = pots_dump_old.read_text()
+        f1 = pots_dump.read_bytes()
+        f2 = pots_dump_old.read_bytes()
         report = print_all_pot()
-        pots_dump_old.write_text(f1)
-        pots_dump.write_text(f2)
+        pots_dump_old.write_bytes(f1)
+        pots_dump.write_bytes(f2)
 
         await undo.finish("撤回操作成功！\n" + report)
     else:

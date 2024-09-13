@@ -1,7 +1,6 @@
 __pycache__
-cur_pots_dump
-cur_pots_dump_old
 .venv
 /.env
 /*.egg-info
 /build
+/data

@@ -1,10 +1,14 @@
-from nonebot import on_command, logger
+from nonebot import on_command, logger, require
 from nonebot.typing import T_State
 from nonebot.adapters import Bot, Event
 from nonebot.permission import Permission
+from pydantic import BaseModel, TypeAdapter
+from pathlib import Path
 
-import os
-import pickle
+require("nonebot_plugin_localstore")
+
+import nonebot_plugin_localstore as store
+
 
 # --------------------------
 # Author: Zachary Chen
@@ -12,27 +16,30 @@ import pickle
 
 logger.info("----------- dessert -----------")
 
+menus_dump: Path = store.get_data_file("dessert", "cur_menus_dump")
+trucks_dump: Path = store.get_data_file("dessert", "cur_trucks_dump")
 
-class one_dessert_item:
-    def __init__(self, name, price):
-        self.name = name
-        self.price = price
+logger.info(f"数据储存目录：{menus_dump.parent}")
+
+
+class OneDessertItem(BaseModel):
+    name: str
+    price: float
 
     def __str__(self):
         return self.name + "   " + str(self.price)
 
 
-class dessert_menu:
-    def __init__(self, name):
-        self.name = name
-        self.item_list = []
+class DessertMenu(BaseModel):
+    name: str
+    item_list: list[OneDessertItem] = []
 
     def add_item(self, name, price):
         for it in self.item_list:
             if it.name == name:
                 it.price = float(price)
                 return
-        new_item = one_dessert_item(name, float(price))
+        new_item = OneDessertItem(name=name, price=float(price))
         self.item_list.append(new_item)
 
     def __str__(self):
@@ -44,12 +51,13 @@ class dessert_menu:
         return ret
 
 
-menus = []
+MenusModel = TypeAdapter(list[DessertMenu])
+
+menus = MenusModel.validate_python([])
 
 
 def print_all_menus():
-    with open("cur_menus_dump", "wb") as f:
-        pickle.dump(menus, f)
+    menus_dump.write_bytes(MenusModel.dump_json(menus))
     menus_str = "现在的菜单有：\n"
     if len(menus) == 0:
         return menus_str + "[无]"
@@ -92,13 +100,11 @@ def find_dessert_by_name(name, menu):
     return False
 
 
-class dessert_bucket:
-    def __init__(self, owner, menu_name):
-        self.owner = owner
-        # self.picked = []
-        self.picked = {}
-        self.menu_name = menu_name
-        self.note = "[无]"
+class DessertBucket(BaseModel):
+    owner: str
+    picked: dict[str, int] = {}
+    menu_name: str
+    note: str = "[无]"
 
     def change_item(self, dessert_name, howmany):
         the_menu = find_menu_by_name(self.menu_name)[1]
@@ -133,7 +139,12 @@ class dessert_bucket:
 
     def __str__(self):
         ret = (
-            self.owner + " 备注: " + self.note + " 总价: " + str(self.total_price()) + "\n"
+            self.owner
+            + " 备注: "
+            + self.note
+            + " 总价: "
+            + str(self.total_price())
+            + "\n"
         )
         # cnter = Counter([a.name for a in self.picked])
         for name, n in self.picked.items():
@@ -141,13 +152,11 @@ class dessert_bucket:
         return ret
 
 
-class dessert_truck:
-    def __init__(self, menu_name, driver, time):
-        self.menu_name = menu_name
-        self.driver = driver
-        # self.driver_qq = driver_qq
-        self.bucket_list = []
-        self.time = time
+class DessertTruck(BaseModel):
+    menu_name: str
+    driver: str
+    bucket_list: list[DessertBucket] = []
+    time: str
 
     def get_bucket_and_index(self, who):
         index = -1
@@ -162,7 +171,9 @@ class dessert_truck:
                     index = ind
                     break
             if not the_bucket:
-                self.bucket_list.append(dessert_bucket(who, self.menu_name))
+                self.bucket_list.append(
+                    DessertBucket(owner=who, menu_name=self.menu_name)
+                )
                 the_bucket = self.bucket_list[-1]
         return the_bucket, index
 
@@ -194,12 +205,13 @@ class dessert_truck:
         return ret
 
 
-trucks = []
+ThucksModel = TypeAdapter(list[DessertTruck])
+
+trucks = ThucksModel.validate_python([])
 
 
 def print_all_trucks():
-    with open("cur_trucks_dump", "wb") as f:
-        pickle.dump(trucks, f)
+    trucks_dump.write_bytes(ThucksModel.dump_json(trucks))
     truck_str = "现在的甜品车有：\n"
     if len(trucks) == 0:
         return truck_str + "[无]"
@@ -227,12 +239,10 @@ def print_all_trucks():
     return truck_str
 
 
-if os.path.exists("cur_menus_dump"):
-    with open("cur_menus_dump", "rb") as f:
-        menus = pickle.load(f)
-if os.path.exists("cur_trucks_dump"):
-    with open("cur_trucks_dump", "rb") as f:
-        trucks = pickle.load(f)
+if menus_dump.exists():
+    menus = MenusModel.validate_json(menus_dump.read_bytes())
+if trucks_dump.exists():
+    trucks = ThucksModel.validate_json(trucks_dump.read_bytes())
 
 new_menu = on_command("新增甜品菜单", permission=Permission(), priority=5)
 
@@ -251,7 +261,7 @@ async def new_menu_got_who(bot: Bot, event: Event, state: T_State):
     names = [a.name for a in menus]
     if str(state["menu_name"]) in names:
         await new_menu.reject("已经有同名菜单了哦，再输一次菜单名罢（")
-    menus.append(dessert_menu(str(state["menu_name"])))
+    menus.append(DessertMenu(name=str(state["menu_name"])))
     await new_menu.finish("新建菜单成功！\n" + print_all_menus())
 
 
@@ -288,8 +298,7 @@ async def new_item_got_price(bot: Bot, event: Event, state: T_State):
     try:
         a = float(str(state["price"]))
         state["menu"][1].add_item(str(state["name"]), str(state["price"]))
-        with open("cur_menus_dump", "wb") as f:
-            pickle.dump(menus, f)
+        print_all_menus()
         await new_menu.finish("新增甜品成功！该菜单：\n" + state["menu"][1])
     except ValueError:
         await new_item.reject("？再输一次单价罢（")
@@ -328,8 +337,7 @@ async def del_item_got_name(bot: Bot, event: Event, state: T_State):
                 if str(state["name"]) in b.picked:
                     await del_item.reject("有人点了这个甜品哦，输入其他甜品吧")
     state["menu"][1].item_list.pop(a[0])
-    with open("cur_menus_dump", "wb") as f:
-        pickle.dump(menus, f)
+    print_all_menus()
     await del_item.finish("删除甜品成功！该菜单：\n" + state["menu"][1])
 
 
@@ -355,8 +363,7 @@ async def del_menu_got_whichmenu(bot: Bot, event: Event, state: T_State):
         if t.menu_name == str(state["whichmenu"]):
             await del_menu.reject("这个菜单还有车在用呢，换一个菜单呗？")
     menus.pop(ret[0])
-    with open("cur_menus_dump", "wb") as f:
-        pickle.dump(menus, f)
+    print_all_menus()
     await del_menu.finish("删除菜单成功！\n" + print_all_menus())
 
 
@@ -391,7 +398,11 @@ async def new_truck_got_time(bot: Bot, event: Event, state: T_State):
     if str(state["time"]).lower() == "quit":
         await new_truck.finish("溜了溜了.jpg")
     trucks.append(
-        dessert_truck(str(state["whichmenu"]), str(state["who"]), str(state["time"]))
+        DessertTruck(
+            manu_name=str(state["whichmenu"]),
+            driver=str(state["who"]),
+            time=str(state["time"]),
+        )
     )
     await new_truck.finish("开车成功！\n" + print_all_trucks())
 
@@ -529,7 +540,9 @@ async def change_item_got_dessert(bot: Bot, event: Event, state: T_State):
     # if not str(state['dessert_item']):
     if False in str(state["dessert_item"]):
         idx = str(state["dessert_item"]).index(False)
-        await change_item.reject(str(state["dessert"])[idx] + "？真的有这个甜品吗？再输一次罢")
+        await change_item.reject(
+            str(state["dessert"])[idx] + "？真的有这个甜品吗？再输一次罢"
+        )
 
 
 @change_item.got("howmany", prompt="多少份？（可以是0）")
@@ -550,10 +563,10 @@ async def change_item_got_dessert(bot: Bot, event: Event, state: T_State):
     if False in ret:
         idx = ret.index(False)
         await change_item.reject(
-            str(state["dessert_item"])[idx][1].name + "？真的有这个甜品吗？重新输入命令罢"
+            str(state["dessert_item"])[idx][1].name
+            + "？真的有这个甜品吗？重新输入命令罢"
         )
-    with open("cur_trucks_dump", "wb") as f:
-        pickle.dump(trucks, f)
+    print_all_trucks()
     await change_item.finish("修改成功！该车：\n" + str(str(state["truck"])))
 
 
@@ -599,8 +612,7 @@ async def change_note_got_note(bot: Bot, event: Event, state: T_State):
     if str(state["note"]).lower() == "quit":
         await change_note.finish("溜了溜了.jpg")
     str(state["truck"]).change_note(str(state["name"]), str(state["note"]))
-    with open("cur_trucks_dump", "wb") as f:
-        pickle.dump(trucks, f)
+    print_all_trucks()
     await del_truck.finish("修改成功！该车：\n" + str(str(state["truck"])))
 
 
