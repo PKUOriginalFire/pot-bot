@@ -52,7 +52,7 @@ def send_status_notify(status: dict, online: bool):
 last_online_status = True
 
 
-@scheduler.scheduled_job("interval", seconds=1)
+@scheduler.scheduled_job("interval", minutes=5)
 async def status_scheduler():
     global last_online_status
     logger.debug("status scheduler")
