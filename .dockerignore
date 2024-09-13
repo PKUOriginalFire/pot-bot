@@ -2,6 +2,6 @@ __pycache__
 cur_pots_dump
 cur_pots_dump_old
 .venv
-/.env
+/napcat
 /*.egg-info
 /build
