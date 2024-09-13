@@ -23,10 +23,10 @@ services:
         restart: true
 
   pot:
-    # image: ghcr.io/pkuoriginalfire/pot-bot:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/pkuoriginalfire/pot-bot:latest
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
     container_name: pot
     env_file:
       - .env
